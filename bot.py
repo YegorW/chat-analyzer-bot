@@ -21,6 +21,12 @@ TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
+async def reset():
+    await bot.delete_webhook(drop_pending_updates=True)
+    print("Webhook и старые обновления удалены")
+
+asyncio.run(reset())
+
 # команда /start
 @dp.message(Command("start"))
 async def start(message: Message):
