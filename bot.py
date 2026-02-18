@@ -2,7 +2,6 @@ import asyncio
 import os
 import requests
 import os
-from aiohttp import web
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 headers = {
     "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
@@ -25,7 +24,6 @@ async def reset():
     await bot.delete_webhook(drop_pending_updates=True)
     print("Webhook и старые обновления удалены")
 
-asyncio.run(reset())
 
 # команда /start
 @dp.message(Command("start"))
@@ -134,13 +132,10 @@ async def main():
     print("Бот запущен...")
     await dp.start_polling(bot)
 
-asyncio.run(main())
+async def main():
+    await bot.delete_webhook(drop_pending_updates=True)
+    print("Webhook удален, бот запущен")
+    await dp.start_polling(bot)
 
-async def handle(request):
-    return web.Response(text="Bot is running")
-
-app = web.Application()
-app.router.add_get("/", handle)
-
-port = int(os.environ.get("PORT", 8000))
-web.run_app(app, port=port)
+if __name__ == "__main__":
+    asyncio.run(main())
