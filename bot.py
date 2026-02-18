@@ -40,11 +40,11 @@ async def handle_photo(message: Message):
 
     # OCR через OCR.Space
     with open("image.jpg", "rb") as f:
-        r = requests.post(
-            "https://api.ocr.space/parse/image",
-            files={"image": f},
-            data={"apikey": OCR_API_KEY, "language": "rus"}
-        )
+       r = requests.post(
+    "https://api.ocr.space/parse/image",
+    files={"image": f},
+    data={"apikey": OCR_TOKEN, "language": "rus"}  # <- тут OCR_TOKEN
+)
     result_json = r.json()
     if result_json["IsErroredOnProcessing"]:
         await message.answer("❌ Ошибка OCR: не удалось распознать текст.")
