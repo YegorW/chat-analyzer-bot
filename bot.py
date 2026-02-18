@@ -2,6 +2,7 @@ import asyncio
 import os
 import requests
 import os
+from aiohttp import web
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 headers = {
     "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
@@ -128,14 +129,30 @@ def analyze_chat(text):
     except Exception as e:
         return f"Ошибка анализа: {e}"
 
-async def main():
-    print("Бот запущен...")
-    await dp.start_polling(bot)
+# endpoint для render/uptime
+async def handle(request):
+    return web.Response(text="Bot is running")
+
 
 async def main():
     await bot.delete_webhook(drop_pending_updates=True)
-    print("Webhook удален, бот запущен")
+    print("Webhook удалён")
+
+    # web server для Render
+    app = web.Application()
+    app.router.add_get("/", handle)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    print("Бот запущен")
+
+    # polling telegram
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
