@@ -1,6 +1,8 @@
 import asyncio
 import os
 import requests
+import os
+from aiohttp import web
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 headers = {
     "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
@@ -127,3 +129,12 @@ async def main():
     await dp.start_polling(bot)
 
 asyncio.run(main())
+
+async def handle(request):
+    return web.Response(text="Bot is running")
+
+app = web.Application()
+app.router.add_get("/", handle)
+
+port = int(os.environ.get("PORT", 8000))
+web.run_app(app, port=port)
