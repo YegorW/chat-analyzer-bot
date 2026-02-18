@@ -3,18 +3,22 @@ import os
 import requests
 import os
 from aiohttp import web
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from dotenv import load_dotenv
+load_dotenv()
+from PIL import Image
+from urllib.parse import quote_plus
+
+
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 headers = {
     "Authorization": f"Bearer {os.getenv('HF_TOKEN')}",
     "Content-Type": "application/json"
 }
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
-from aiogram.types import Message
-from dotenv import load_dotenv
-load_dotenv()
-import pytesseract
-from PIL import Image
+
+
 OCR_TOKEN = os.getenv("OCR_TOKEN")
 TOKEN = os.getenv("BOT_TOKEN")
 
@@ -62,6 +66,21 @@ async def handle_photo(message: Message):
 
     # асинхронный вызов анализа
     result = await asyncio.to_thread(analyze_chat, text)
+    
+    # Сюда вставляем кнопку "Поделиться результатом"
+    from urllib.parse import quote_plus
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+    # кодируем текст для URL
+    share_text = quote_plus(result)
+
+    # формируем ссылку для Telegram share
+    share_url = f"https://t.me/share/url?url=&text={share_text}"
+
+    # создаём клавиатуру с кнопкой
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(InlineKeyboardButton("📤 Поделиться результатом", url=share_url))
+    
     await message.answer(result)
     os.remove("image.jpg")
 
