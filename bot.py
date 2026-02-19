@@ -67,7 +67,7 @@ async def handle_photo(message: Message):
     # асинхронный вызов анализа
     result = await asyncio.to_thread(analyze_chat, text)
     
-   keyboard = InlineKeyboardMarkup(
+keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
