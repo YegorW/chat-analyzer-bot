@@ -67,21 +67,18 @@ async def handle_photo(message: Message):
     # асинхронный вызов анализа
     result = await asyncio.to_thread(analyze_chat, text)
     
-    # Сюда вставляем кнопку "Поделиться результатом"
-    from urllib.parse import quote_plus
-    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-    # кодируем текст для URL
-    share_text = quote_plus(result)
-
-    # формируем ссылку для Telegram share
-    share_url = f"https://t.me/share/url?url=&text={share_text}"
-
-    # создаём клавиатуру с кнопкой
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(InlineKeyboardButton("📤 Поделиться результатом", url=share_url))
+   keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="📤 Поделиться результатом",
+                switch_inline_query=result  # эта кнопка позволяет поделиться результатом в другом чате
+            )
+        ]
+    ]
+)
     
-    await message.answer(result)
+    await message.answer(result, reply_markup=keyboard)
     os.remove("image.jpg")
 
     
