@@ -1,11 +1,10 @@
 import asyncio
 import os
 import requests
-import os
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, Update
 from dotenv import load_dotenv
 load_dotenv()
 from PIL import Image
@@ -18,16 +17,12 @@ headers = {
     "Content-Type": "application/json"
 }
 
-
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 OCR_TOKEN = os.getenv("OCR_TOKEN")
 TOKEN = os.getenv("BOT_TOKEN")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
-
-async def reset():
-    await bot.delete_webhook(drop_pending_updates=True)
-    print("Webhook и старые обновления удалены")
 
 
 # команда /start
@@ -92,8 +87,8 @@ def analyze_chat(text):
 Ты — строгий анализатор переписок подростков в Телеграме.
 
 Формат переписки:
-Сообщения справа отправлены пользователем бота, слева — собеседником.
-Рядом с сообщением есть аватарка и время отправки (24-часовой формат).
+Сообщения с правой стороны отправлены пользователем бота, с левой сторны — собеседником.
+Рядом с сообщением есть время отправки (24-часовой формат).
 Сообщения могут содержать реакции (эмодзи) — учитывай их как позитивные или негативные.
 
 Задача:
@@ -161,26 +156,33 @@ def analyze_chat(text):
 # endpoint для render/uptime
 async def handle(request):
     return web.Response(text="Bot is running")
-
+    
+async def telegram_webhook(request):
+    data = await request.json()
+    update = Update(**data)
+    await dp.feed_update(bot, update)
+    return web.Response()
 
 async def main():
-    await bot.delete_webhook(drop_pending_updates=True)
-    print("Webhook удалён")
 
     # web server для Render
     app = web.Application()
+    app.router.add_post("/webhook", telegram_webhook)
     app.router.add_get("/", handle)
 
     runner = web.AppRunner(app)
     await runner.setup()
+    
     port = int(os.environ.get("PORT", 8000))
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-
+    
+    await bot.set_webhook(WEBHOOK_URL)
+    print("Webhook установлен")
     print("Бот запущен")
-
-    # polling telegram
-    await dp.start_polling(bot)
+    
+    # держим сервер живым
+    await asyncio.Event().wait()
 
 
 if __name__ == "__main__":
