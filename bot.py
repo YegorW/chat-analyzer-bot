@@ -67,16 +67,16 @@ async def handle_photo(message: Message):
     # асинхронный вызов анализа
     result = await asyncio.to_thread(analyze_chat, text)
     
-keyboard = InlineKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [
+            [
             InlineKeyboardButton(
                 text="📤 Поделиться результатом",
                 switch_inline_query=result  # вставляет результат в поле ввода другого чата
-            )
+                )
+            ]
         ]
-    ]
-)
+    )
     
     await message.answer(result, reply_markup=keyboard)
     os.remove("image.jpg")
